@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Отправление / 发货登记</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F7F6F3; --surface: #FFFFFF; --border: #E2E0D9; --border-strong: #C8C5BC;
+  --text: #1A1916; --text-2: #5C5A54; --text-3: #9B9890;
+  --accent: #1A6B3C; --accent-bg: #EAF4EE; --accent-border: #A8D4B8;
+  --danger: #B83232; --danger-bg: #FBF0F0;
+  --warning-bg: #FDF6E7; --warning: #8A6200; --warning-border: #E8D5A0;
+  --radius: 8px; --shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px; line-height: 1.6; padding: 24px 16px 60px;
+}
+.container { max-width: 680px; margin: 0 auto; }
+
+/* Header */
+.page-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.logo img { width: 44px; height: 44px; border-radius: 10px; }
+.header-text .brand { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.04em; text-transform: uppercase; }
+.header-text h1 { font-size: 18px; font-weight: 600; line-height: 1.3; }
+.header-text p { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow); }
+
+/* Section label */
+.sec-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+/* Fields */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.field:last-child { margin-bottom: 0; }
+.field label { font-size: 12px; color: var(--text-2); font-weight: 500; line-height: 1.4; }
+.field label .cn { color: var(--text-3); font-weight: 400; }
+.field input, .field select, .field textarea {
+  background: #FAFAF8; border: 1px solid var(--border-strong);
+  border-radius: var(--radius); padding: 8px 10px; font-size: 13px;
+  color: var(--text); font-family: inherit; outline: none; width: 100%;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,107,60,.1); background: #fff;
+}
+.field textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+
+/* Warehouse card */
+.warehouse-card {
+  background: var(--accent-bg); border: 1px solid var(--accent-border);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
+}
+.warehouse-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.warehouse-name { font-size: 13px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 6px; }
+.copy-btn {
+  font-size: 12px; font-weight: 500; padding: 5px 12px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;
+  transition: background .15s;
+}
+.copy-btn:hover { background: #155C32; }
+.copy-btn.copied { background: #0A5FA0; }
+.warehouse-body { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
+.wh-key { color: var(--text-3); font-weight: 500; white-space: nowrap; }
+.wh-val { color: var(--text); font-weight: 500; }
+.wh-addr { color: var(--text); line-height: 1.5; }
+
+/* Dimensions row */
+.dim-row { display: flex; align-items: center; gap: 8px; }
+.dim-row input { flex: 1; }
+.dim-sep { color: var(--text-3); font-size: 16px; flex-shrink: 0; }
+
+/* Track input highlight */
+#track { font-size: 15px; font-weight: 600; letter-spacing: 0.03em; }
+
+/* Submit */
+.submit-btn {
+  width: 100%; padding: 14px; font-size: 15px; font-weight: 600;
+  background: var(--accent); color: #fff; border: none; border-radius: 10px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 8px; font-family: inherit; margin-top: 4px; transition: background .15s;
+}
+.submit-btn:hover { background: #155C32; }
+.submit-btn:disabled { background: #9B9890; cursor: not-allowed; }
+.status-msg { text-align: center; font-size: 13px; padding: 10px; border-radius: 8px; display: none; margin-top: 10px; }
+.status-msg.sending { display: block; background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.status-msg.success { display: block; background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+.status-msg.error { display: block; background: var(--danger-bg); color: var(--danger); border: 1px solid #F0C0C0; }
+
+/* Customs items */
+.customs-list { display: flex; flex-direction: column; gap: 8px; }
+.customs-row { display: grid; grid-template-columns: 2fr 1fr 1fr 28px; gap: 8px; align-items: end; }
+.btn-add { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: var(--accent); border: 1px dashed var(--accent-border); background: var(--accent-bg); border-radius: 6px; padding: 5px 12px; cursor: pointer; margin-top: 6px; }
+.btn-del { width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0; border: 1px solid #F0C0C0; background: var(--danger-bg); color: var(--danger); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+@media (max-width: 600px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .customs-row { grid-template-columns: 1fr 1fr 28px; }
+  .customs-row .field:first-child { grid-column: 1 / -2; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="padding:12px 0 4px"><a href="/" style="font-size:13px;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:4px">‹ На главную / 返回首页</a></div>
+
+  <div class="page-header">
+    <div class="logo"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='10' fill='%231A6B3C'/%3E%3Ctext x='22' y='30' font-size='22' text-anchor='middle' fill='white'%3E📦%3C/text%3E%3C/svg%3E" alt="SendMax"></div>
+    <div class="header-text">
+      <div class="brand">SendMax</div>
+      <h1>Оформление отправления / 发货登记</h1>
+      <p id="date-line"></p>
+    </div>
+  </div>
+
+  <!-- Sender -->
+  <div class="card">
+    <div class="sec-label">👤 Отправитель / 发件人</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Ваше имя <span class="cn">/ 您的姓名</span></label>
+        <input type="text" id="sender-name" placeholder="Ли Вэй / 李伟">
+      </div>
+      <div class="field">
+        <label>Телефон / WeChat <span class="cn">/ 电话·微信</span></label>
+        <input type="text" id="sender-phone" placeholder="+7 / 微信号">
+      </div>
+    </div>
+  </div>
+
+  <!-- Warehouse -->
+  <div class="warehouse-card">
+    <div class="warehouse-header">
+      <div class="warehouse-name">🏭 Склад 北京-1</div>
+      <button class="copy-btn" id="copy-btn" onclick="copyAddress()">📋 Скопировать адрес / 复制地址</button>
+    </div>
+    <div class="warehouse-body">
+      <span class="wh-key">姓名</span><span class="wh-val">白转AVSM</span>
+      <span class="wh-key">电话</span><span class="wh-val">15555512556</span>
+      <span class="wh-key">地址</span><span class="wh-addr">北京市朝阳区雅宝路日坛国际贸易中心B座3层3K52转AVSM</span>
+    </div>
+  </div>
+
+  <!-- Parcel -->
+  <div class="card">
+    <div class="sec-label">📦 Данные посылки / 包裹信息</div>
+
+    <div class="field">
+      <label>Артикул / номер заказа <span class="cn">/ 货号·订单号</span></label>
+      <input type="text" id="article" placeholder="SKU-12345 / 货号">
+    </div>
+
+    <div class="field">
+      <label>Трек-номер <span class="cn">/ 快递单号</span></label>
+      <input type="text" id="track" placeholder="SF1234567890 / 顺丰单号...">
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Вес (кг) <span class="cn">/ 重量（公斤）</span></label>
+        <input type="number" id="weight" placeholder="0.5" step="0.1" min="0">
+      </div>
+      <div class="field">
+        <label>Габариты (см) Д × Ш × В <span class="cn">/ 尺寸（厘米）长×宽×高</span></label>
+        <div class="dim-row">
+          <input type="number" id="dim-l" placeholder="长" min="0">
+          <span class="dim-sep">×</span>
+          <input type="number" id="dim-w" placeholder="宽" min="0">
+          <span class="dim-sep">×</span>
+          <input type="number" id="dim-h" placeholder="高" min="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Количество мест <span class="cn">/ 件数</span></label>
+      <input type="number" id="pieces" placeholder="1" min="1" value="1">
+    </div>
+  </div>
+
+  <!-- Customs -->
+  <div class="card">
+    <div class="sec-label">🧾 Состав посылки (для таможни) / 申报内容（报关用）</div>
+    <div class="customs-list" id="customs-list">
+      <div class="customs-row">
+        <div class="field"><label>Наименование <span class="cn">/ 品名</span></label><input type="text" placeholder="Одежда / 服装"></div>
+        <div class="field"><label>Кол-во <span class="cn">/ 数量</span></label><input type="number" placeholder="1" min="1"></div>
+        <div class="field"><label>Стоимость ($) <span class="cn">/ 价值</span></label><input type="number" placeholder="10" min="0"></div>
+        <button class="btn-del" onclick="this.closest('.customs-row').remove()">✕</button>
+      </div>
+    </div>
+    <button class="btn-add" onclick="addCustomsRow()">＋ Добавить товар / 添加商品</button>
+
+    <div class="field" style="margin-top:12px">
+      <label>Комментарий к посылке <span class="cn">/ 备注</span></label>
+      <textarea id="comment" placeholder="Хрупкое, не переворачивать... / 易碎，请勿倒置..."></textarea>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <button class="submit-btn" id="submit-btn" onclick="submitForm()">
+    ✈️ Отправить / 提交发货信息
+  </button>
+  <div class="status-msg" id="status-msg"></div>
+
+</div>
+<script>
+// ── Config ──────────────────────────────────────────────────
+const SHEET_ID  = '1Fn4d-d-yUare8nOZbhAxt4o-MQWmgV3zPbSSJ9i2vRY';
+const BOT_TOKEN = '7733069485:AAGk4xEM0UTgGtOABPER-ZM9k9wCCXKw4eM';
+const CHAT_ID   = '64796';
+const SERVER    = 'https://buyer-report-bot-production.up.railway.app';
+
+const WAREHOUSE = {
+  name:  '北京-1',
+  recip: '白转AVSM',
+  phone: '15555512556',
+  addr:  '北京市朝阳区雅宝路日坛国际贸易中心B座3层3K52转AVSM',
+};
+
+// Date
+const d = new Date();
+document.getElementById('date-line').textContent =
+  d.toLocaleDateString('ru-RU', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+// Copy address
+function copyAddress() {
+  const text = `姓名：${WAREHOUSE.recip}\n电话：${WAREHOUSE.phone}\n地址：${WAREHOUSE.addr}`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✅ Скопировано / 已复制';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Скопировать адрес / 复制地址'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Customs rows
+function addCustomsRow() {
+  const row = document.createElement('div');
+  row.className = 'customs-row';
+  row.innerHTML = `
+    <div class="field"><label>Наименование <span class="cn">/ 品名</span></label><input type="text" placeholder="Одежда / 服装"></div>
+    <div class="field"><label>Кол-во <span class="cn">/ 数量</span></label><input type="number" placeholder="1" min="1"></div>
+    <div class="field"><label>Стоимость ($) <span class="cn">/ 价值</span></label><input type="number" placeholder="10" min="0"></div>
+    <button class="btn-del" onclick="this.closest('.customs-row').remove()">✕</button>
+  `;
+  document.getElementById('customs-list').appendChild(row);
+}
+
+// Collect customs
+function getCustoms() {
+  return [...document.querySelectorAll('.customs-row')].map(r => {
+    const inputs = r.querySelectorAll('input');
+    return { name: inputs[0].value, qty: inputs[1].value, value: inputs[2].value };
+  }).filter(c => c.name);
+}
+
+// Submit
+async function submitForm() {
+  const senderName  = document.getElementById('sender-name').value.trim();
+  const senderPhone = document.getElementById('sender-phone').value.trim();
+  const article     = document.getElementById('article').value.trim();
+  const track       = document.getElementById('track').value.trim();
+  const weight      = document.getElementById('weight').value;
+  const dimL        = document.getElementById('dim-l').value;
+  const dimW        = document.getElementById('dim-w').value;
+  const dimH        = document.getElementById('dim-h').value;
+  const pieces      = document.getElementById('pieces').value;
+  const comment     = document.getElementById('comment').value.trim();
+  const customs     = getCustoms();
+  const dateStr     = d.toLocaleDateString('ru-RU');
+
+  if (!senderName) { alert('Введите ваше имя / 请输入姓名'); return; }
+  if (!track)      { alert('Введите трек-номер / 请输入快递单号'); return; }
+  if (!weight)     { alert('Введите вес / 请输入重量'); return; }
+
+  const dims = (dimL && dimW && dimH) ? `${dimL}×${dimW}×${dimH} см` : '—';
+  const customsText = customs.length
+    ? customs.map(c => `${c.name} × ${c.qty || 1} шт. — $${c.value || 0}`).join('\n')
+    : '—';
+  const totalValue = customs.reduce((s, c) => s + (parseFloat(c.value) || 0), 0);
+
+  const btn = document.getElementById('submit-btn');
+  const msg = document.getElementById('status-msg');
+  btn.disabled = true;
+  msg.className = 'status-msg sending';
+  msg.textContent = '⏳ Отправляем… / 正在提交…';
+
+  try {
+    // 1. Telegram notification
+    const tgText =
+      `✈️ *Новое отправление — Склад ${WAREHOUSE.name}*\n\n` +
+      `👤 *Отправитель:* ${senderName}${senderPhone ? ' · ' + senderPhone : ''}\n` +
+      `📦 *Артикул:* ${article || '—'}\n` +
+      `🔢 *Трек-номер:* \`${track}\`\n` +
+      `⚖️ *Вес:* ${weight} кг\n` +
+      `📐 *Габариты:* ${dims}\n` +
+      `🗂 *Мест:* ${pieces}\n\n` +
+      `🧾 *Состав:*\n${customsText}\n` +
+      `💰 *Декл. стоимость:* $${totalValue.toFixed(2)}\n` +
+      (comment ? `\n💬 *Комментарий:* ${comment}` : '') +
+      `\n\n📅 ${dateStr}`;
+
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CHAT_ID, text: tgText, parse_mode: 'Markdown' }),
+    });
+
+    // 2. Google Sheets via server
+    const row = [
+      dateStr, senderName, senderPhone, article, track,
+      weight, dims, pieces,
+      customsText.replace(/\n/g, '; '), totalValue.toFixed(2),
+      comment, WAREHOUSE.name, 'В пути',
+    ];
+
+    await fetch(`${SERVER}/parcel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ row, sheetId: SHEET_ID }),
+    });
+
+    msg.className = 'status-msg success';
+    msg.textContent = '✅ Отправлено! Посылка зарегистрирована. / 提交成功！包裹已登记。';
+
+    // Reset
+    ['sender-name','sender-phone','article','track','weight','dim-l','dim-w','dim-h','comment'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('pieces').value = '1';
+    document.getElementById('customs-list').innerHTML = `
+      <div class="customs-row">
+        <div class="field"><label>Наименование <span class="cn">/ 品名</span></label><input type="text" placeholder="Одежда / 服装"></div>
+        <div class="field"><label>Кол-во <span class="cn">/ 数量</span></label><input type="number" placeholder="1" min="1"></div>
+        <div class="field"><label>Стоимость ($) <span class="cn">/ 价值</span></label><input type="number" placeholder="10" min="0"></div>
+        <button class="btn-del" onclick="this.closest('.customs-row').remove()">✕</button>
+      </div>`;
+
+  } catch(e) {
+    msg.className = 'status-msg error';
+    msg.textContent = '❌ Ошибка. Проверьте соединение. / 提交失败，请检查网络。';
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
