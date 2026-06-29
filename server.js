@@ -465,3 +465,63 @@ app.post('/parcel', async (req, res) => {
 // ── Page routes ──────────────────────────────────────────────────────────────
 app.get('/report', (_, res) => res.sendFile(path.join(__dirname, 'public', 'report.html')));
 app.get('/parcel', (_, res) => res.sendFile(path.join(__dirname, 'public', 'parcel.html')));
+
+// ── Setup parcel sheet dropdown ──────────────────────────────────────────────
+app.get('/setup-parcel-sheet', async (req, res) => {
+  try {
+    const auth   = getAuth();
+    const sheets = google.sheets({ version: 'v4', auth });
+
+    // Get sheet metadata
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
+    const sheetObj = meta.data.sheets.find(s => s.properties.title === 'Отправления');
+    if (!sheetObj) return res.send('❌ Лист "Отправления" не найден. Сначала отправьте одну посылку через форму.');
+
+    const sheetId  = sheetObj.properties.sheetId;
+    const headers  = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'Отправления!1:1' });
+    const cols     = headers.data.values?.[0] || [];
+    const statusCol = cols.indexOf('Статус');
+    if (statusCol === -1) return res.send('❌ Колонка "Статус" не найдена.');
+
+    // Add dropdown validation
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      requestBody: {
+        requests: [
+          {
+            setDataValidation: {
+              range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: statusCol, endColumnIndex: statusCol + 1 },
+              rule: {
+                condition: {
+                  type: 'ONE_OF_LIST',
+                  values: [
+                    { userEnteredValue: '🚚 В пути' },
+                    { userEnteredValue: '📦 На складе' },
+                    { userEnteredValue: '✅ Доставлено' },
+                    { userEnteredValue: '❌ Возврат' },
+                    { userEnteredValue: '⚠️ Проблема' },
+                  ],
+                },
+                showCustomUi: true,
+                strict: true,
+              },
+            },
+          },
+          {
+            repeatCell: {
+              range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: statusCol, endColumnIndex: statusCol + 1 },
+              cell: { userEnteredFormat: { backgroundColor: { red: 0.1, green: 0.42, blue: 0.24 }, textFormat: { bold: true, foregroundColor: { red: 1, green: 1, blue: 1 } } } },
+            },
+            fields: 'userEnteredFormat(backgroundColor,textFormat)',
+          },
+          { updateSheetProperties: { properties: { sheetId, gridProperties: { frozenRowCount: 1 } }, fields: 'gridProperties.frozenRowCount' } },
+        ],
+      },
+    });
+
+    res.send('✅ Готово! Выпадающий список статусов добавлен в Google Sheets. Можно закрыть эту страницу.');
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('❌ Ошибка: ' + e.message);
+  }
+});
