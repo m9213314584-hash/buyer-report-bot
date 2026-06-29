@@ -311,7 +311,7 @@ async function submitForm() {
 
     // 2. Google Sheets via server
     const row = [
-      dateStr, senderName, senderPhone, article, track,
+      dateStr, senderName, article, track,
       weight, dims, pieces,
       customsText.replace(/\n/g, '; '), totalValue.toFixed(2),
       comment, WAREHOUSE.name, 'В пути',
