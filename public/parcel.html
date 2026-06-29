@@ -123,17 +123,12 @@ body {
   <!-- Sender -->
   <div class="card">
     <div class="sec-label">👤 Отправитель / 发件人</div>
-    <div class="grid-2">
-      <div class="field">
+    <div class="field">
         <label>Ваше имя <span class="cn">/ 您的姓名</span></label>
         <input type="text" id="sender-name" placeholder="Ли Вэй / 李伟">
       </div>
-      <div class="field">
-        <label>Телефон / WeChat <span class="cn">/ 电话·微信</span></label>
-        <input type="text" id="sender-phone" placeholder="+7 / 微信号">
-      </div>
+
     </div>
-  </div>
 
   <!-- Warehouse -->
   <div class="warehouse-card">
@@ -265,7 +260,7 @@ function getCustoms() {
 // Submit
 async function submitForm() {
   const senderName  = document.getElementById('sender-name').value.trim();
-  const senderPhone = document.getElementById('sender-phone').value.trim();
+  const senderPhone = '';
   const article     = document.getElementById('article').value.trim();
   const track       = document.getElementById('track').value.trim();
   const weight      = document.getElementById('weight').value;
