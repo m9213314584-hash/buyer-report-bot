@@ -418,3 +418,46 @@ app.post('/send-report', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Server on port ${PORT}`));
+
+// ── Parcel endpoint ──────────────────────────────────────────────────────────
+app.post('/parcel', async (req, res) => {
+  try {
+    const { row, sheetId } = req.body;
+    if (!row) return res.status(400).json({ ok: false, error: 'No data' });
+
+    const auth   = getAuth();
+    const sheets = google.sheets({ version: 'v4', auth });
+    const sid    = sheetId || SHEET_ID;
+
+    // Ensure sheet "Отправления" exists with headers
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: sid });
+    const names = meta.data.sheets.map(s => s.properties.title);
+
+    if (!names.includes('Отправления')) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId: sid,
+        requestBody: { requests: [{ addSheet: { properties: { title: 'Отправления' } } }] },
+      });
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: sid, range: 'Отправления!A1',
+        valueInputOption: 'RAW',
+        requestBody: { values: [[
+          'Дата', 'Отправитель', 'Телефон/WeChat', 'Артикул', 'Трек-номер',
+          'Вес (кг)', 'Габариты', 'Мест', 'Состав', 'Декл. стоимость ($)',
+          'Комментарий', 'Склад', 'Статус',
+        ]] },
+      });
+    }
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: sid, range: 'Отправления!A1',
+      valueInputOption: 'RAW', insertDataOption: 'INSERT_ROWS',
+      requestBody: { values: [row] },
+    });
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Parcel error:', e);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
