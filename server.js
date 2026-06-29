@@ -461,3 +461,7 @@ app.post('/parcel', async (req, res) => {
     res.status(500).json({ ok: false, error: e.message });
   }
 });
+
+// ── Page routes ──────────────────────────────────────────────────────────────
+app.get('/report', (_, res) => res.sendFile(path.join(__dirname, 'public', 'report.html')));
+app.get('/parcel', (_, res) => res.sendFile(path.join(__dirname, 'public', 'parcel.html')));
