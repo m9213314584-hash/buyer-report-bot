@@ -3,92 +3,497 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SendMax — Портал закупщика</title>
+<title>Отчёт закупщика / 采购员日报</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #F7F6F3; --surface: #FFFFFF; --border: #E2E0D9;
-  --text: #1A1916; --text-2: #5C5A54; --text-3: #9B9890;
-  --accent: #1A6B3C; --accent-bg: #EAF4EE; --accent-border: #A8D4B8;
-  --radius: 8px; --shadow: 0 1px 3px rgba(0,0,0,0.07);
-}
-body {
-  background: var(--bg); color: var(--text);
-  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-  min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  padding: 24px 16px;
-}
-.wrap { max-width: 480px; width: 100%; }
-.header { text-align: center; margin-bottom: 36px; }
-.logo { width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 14px; display: block; }
-.brand { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
-.title { font-size: 22px; font-weight: 600; line-height: 1.3; }
-.title-cn { font-size: 15px; color: var(--text-3); margin-top: 4px; }
-.date { font-size: 12px; color: var(--text-3); margin-top: 8px; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F7F6F3; --surface: #FFFFFF; --border: #E2E0D9; --border-strong: #C8C5BC;
+    --text: #1A1916; --text-2: #5C5A54; --text-3: #9B9890;
+    --accent: #1A6B3C; --accent-bg: #EAF4EE; --accent-border: #A8D4B8;
+    --danger: #B83232; --danger-bg: #FBF0F0;
+    --warning-bg: #FDF6E7; --warning: #8A6200; --warning-border: #E8D5A0;
+    --success-bg: #EAF4EE; --success: #1A6B3C; --success-border: #A8D4B8;
+    --radius: 8px; --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px; line-height: 1.6; padding: 24px 16px 60px;
+  }
+  .page-header { max-width:720px; margin:0 auto 24px; display:flex; align-items:flex-start; gap:14px; }
+  .header-icon { width:44px; height:44px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:22px; }
+  .header-text h1 { font-size:18px; font-weight:600; line-height:1.3; }
+  .header-text p  { font-size:13px; color:var(--text-3); margin-top:2px; }
 
-.menu { display: flex; flex-direction: column; gap: 14px; }
-.menu-btn {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px; padding: 20px 22px;
-  display: flex; align-items: center; gap: 16px;
-  text-decoration: none; color: var(--text);
-  box-shadow: var(--shadow); transition: border-color .15s, box-shadow .15s;
-  cursor: pointer;
-}
-.menu-btn:hover { border-color: var(--accent-border); box-shadow: 0 2px 8px rgba(26,107,60,.12); }
-.menu-icon {
-  width: 52px; height: 52px; border-radius: 12px;
-  background: var(--accent-bg); border: 1px solid var(--accent-border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 26px; flex-shrink: 0;
-}
-.menu-text { flex: 1; }
-.menu-title { font-size: 16px; font-weight: 600; line-height: 1.3; }
-.menu-title-cn { font-size: 13px; color: var(--text-3); margin-top: 2px; }
-.menu-desc { font-size: 12px; color: var(--text-2); margin-top: 6px; line-height: 1.5; }
-.menu-arrow { color: var(--text-3); font-size: 18px; flex-shrink: 0; }
+  .container { max-width:720px; margin:0 auto; }
 
-.footer { text-align: center; margin-top: 32px; font-size: 12px; color: var(--text-3); }
+  /* Buyer name card */
+  .buyer-card {
+    background:var(--surface); border:1px solid var(--accent-border);
+    border-radius:12px; padding:16px; margin-bottom:20px;
+    box-shadow:var(--shadow); display:flex; align-items:center; gap:14px;
+  }
+  .buyer-avatar {
+    width:44px; height:44px; border-radius:50%; background:var(--accent);
+    color:#fff; font-size:18px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    text-transform:uppercase;
+  }
+  .buyer-field { flex:1; }
+  .buyer-field label { font-size:12px; font-weight:600; color:var(--text-2); display:block; margin-bottom:4px; }
+  .buyer-field input {
+    width:100%; background:#FAFAF8; border:1px solid var(--border-strong);
+    border-radius:var(--radius); padding:8px 12px; font-size:14px;
+    color:var(--text); font-family:inherit; outline:none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .buyer-field input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(26,107,60,0.1); background:#fff; }
+
+  /* Supplier cards */
+  .supplier-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; margin-bottom:16px; box-shadow:var(--shadow); overflow:hidden; }
+  .card-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#FAFAF8; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; }
+  .card-head-left { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .card-num { width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .card-title { font-size:14px; font-weight:600; }
+  .badge { font-size:11px; padding:2px 9px; border-radius:99px; font-weight:500; }
+  .badge-tbd    { background:#F0EFEB; color:#6B6963; border:1px solid #DDD9D1; }
+  .badge-ok     { background:var(--success-bg); color:var(--success); border:1px solid var(--success-border); }
+  .badge-order  { background:#EAF1FB; color:#1A4F8A; border:1px solid #B0CBF0; }
+  .badge-sample { background:#F0EAFB; color:#5B2DA0; border:1px solid #C8B0F0; }
+  .badge-fail   { background:var(--danger-bg); color:var(--danger); border:1px solid #F0C0C0; }
+  .badge-wait   { background:var(--warning-bg); color:var(--warning); border:1px solid var(--warning-border); }
+  .badge-prog   { background:#E8F4FF; color:#0A5FA0; border:1px solid #A8D0F0; }
+  .card-actions { display:flex; align-items:center; gap:8px; }
+  .btn-icon { width:28px; height:28px; border-radius:6px; border:1px solid var(--border); background:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-3); font-size:16px; flex-shrink:0; transition:background 0.1s, color 0.1s; }
+  .btn-icon:hover { background:var(--danger-bg); color:var(--danger); border-color:#F0C0C0; }
+  .chevron { transition:transform 0.2s; font-style:normal; font-size:14px; color:var(--text-3); }
+  .chevron.open { transform:rotate(180deg); }
+  .card-body { padding:16px; display:none; }
+  .card-body.open { display:block; }
+
+  .sec { margin-bottom:16px; }
+  .sec-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  .divider { height:1px; background:var(--border); margin:16px 0; }
+
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .field label { font-size:12px; color:var(--text-2); font-weight:500; line-height:1.4; }
+  .field label .cn { color:var(--text-3); font-weight:400; }
+  .field input, .field select, .field textarea {
+    background:#FAFAF8; border:1px solid var(--border-strong); border-radius:var(--radius);
+    padding:7px 10px; font-size:13px; color:var(--text); font-family:inherit; outline:none;
+    transition:border-color 0.15s, box-shadow 0.15s; width:100%;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(26,107,60,0.1); background:#fff; }
+  .field textarea { resize:vertical; min-height:64px; line-height:1.6; }
+
+  .catalog-list { display:flex; flex-direction:column; gap:6px; }
+  .catalog-row { display:flex; align-items:center; gap:8px; }
+  .catalog-row .name-input { flex:1; }
+  .catalog-row .url-input  { flex:2; }
+  .open-link { font-size:12px; padding:6px 10px; border-radius:6px; background:var(--accent-bg); border:1px solid var(--accent-border); color:var(--accent); text-decoration:none; white-space:nowrap; flex-shrink:0; display:flex; align-items:center; gap:4px; }
+  .open-link.disabled { background:#F0EFEB; border-color:var(--border); color:var(--text-3); pointer-events:none; }
+
+  .status-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .status-opt { border:1px solid var(--border); border-radius:var(--radius); padding:9px 10px; cursor:pointer; transition:border-color 0.12s, background 0.12s; }
+  .status-opt:hover { border-color:var(--accent); background:var(--accent-bg); }
+  .status-opt.sel   { border-color:var(--accent); background:var(--accent-bg); }
+  .status-opt .ico  { font-size:16px; margin-bottom:3px; }
+  .status-opt .lbl  { font-size:12px; font-weight:600; line-height:1.3; }
+  .status-opt .sub  { font-size:10px; color:var(--text-3); margin-top:1px; }
+
+  .rating-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .rating-item { display:flex; flex-direction:column; gap:4px; }
+  .rlabel { font-size:12px; font-weight:500; color:var(--text-2); line-height:1.4; }
+  .rlabel .cn { color:var(--text-3); font-weight:400; }
+  .stars { display:flex; gap:3px; margin-top:1px; }
+  .star { font-size:20px; cursor:pointer; color:#DDD9D1; transition:color 0.1s; }
+  .star.lit { color:#D4900A; }
+
+  .tag-wrap { display:flex; flex-wrap:wrap; gap:5px; margin-top:4px; }
+  .tag { font-size:12px; padding:3px 10px; border-radius:99px; border:1px solid var(--border-strong); cursor:pointer; color:var(--text-2); transition:all 0.1s; line-height:1.5; background:#FAFAF8; }
+  .tag.active { background:var(--danger-bg); border-color:#F0C0C0; color:var(--danger); }
+
+  .steps-list { display:flex; flex-direction:column; gap:6px; }
+  .step-row { display:flex; align-items:center; gap:8px; }
+  .step-row .step-input { flex:1; }
+  .step-row .date-input { width:140px; flex-shrink:0; }
+
+  .btn-add { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500; color:var(--accent); border:1px dashed var(--accent-border); background:var(--accent-bg); border-radius:6px; padding:5px 12px; cursor:pointer; margin-top:6px; }
+  .btn-add-supplier { display:flex; align-items:center; justify-content:center; gap:8px; font-size:14px; font-weight:500; color:var(--accent); border:1.5px dashed var(--accent-border); background:var(--accent-bg); border-radius:12px; padding:14px; cursor:pointer; margin-bottom:20px; }
+  .btn-add-supplier:hover { background:#D8EEE2; }
+  .btn-del { width:28px; height:28px; border-radius:6px; flex-shrink:0; border:1px solid #F0C0C0; background:var(--danger-bg); color:var(--danger); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; }
+
+  .global-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:20px; box-shadow:var(--shadow); }
+
+  /* Submit area */
+  .submit-area { display:flex; flex-direction:column; gap:10px; }
+  .submit-btn {
+    width:100%; padding:13px; font-size:15px; font-weight:600;
+    background:var(--accent); color:#fff; border:none; border-radius:10px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    gap:8px; transition:background 0.15s; font-family:inherit;
+  }
+  .submit-btn:hover { background:#155C32; }
+  .submit-btn:disabled { background:#9B9890; cursor:not-allowed; }
+  .status-msg { text-align:center; font-size:13px; padding:8px; border-radius:8px; display:none; }
+  .status-msg.sending { display:block; background:var(--warning-bg); color:var(--warning); border:1px solid var(--warning-border); }
+  .status-msg.success { display:block; background:var(--success-bg); color:var(--success); border:1px solid var(--success-border); }
+  .status-msg.error   { display:block; background:var(--danger-bg);  color:var(--danger);  border:1px solid #F0C0C0; }
+
+  @media (max-width:600px) {
+    .grid-2, .grid-3 { grid-template-columns:1fr; }
+    .status-grid { grid-template-columns:1fr 1fr; }
+    .rating-grid { grid-template-columns:1fr 1fr; }
+    .step-row .date-input { width:110px; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="header">
-    <img class="logo" src="data:image/png;base64,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" alt="SendMax">
-    <div class="brand">SendMax</div>
-    <div class="title">Портал закупщика</div>
-    <div class="title-cn">采购员工作平台</div>
-    <div class="date" id="date-line"></div>
+
+<div style="max-width:720px;margin:0 auto;padding:16px 0 0"><a href="/" style="font-size:13px;color:#1A6B3C;text-decoration:none;display:inline-flex;align-items:center;gap:4px">‹ На главную / 返回首页</a></div>
+
+<div class="page-header">
+  <div class="header-icon">📋</div>
+  <div class="header-text">
+    <h1>Ежедневный отчёт закупщика / 采购员日报</h1>
+    <p id="date-line"></p>
   </div>
-
-  <div class="menu">
-    <a class="menu-btn" href="/report">
-      <div class="menu-icon">📋</div>
-      <div class="menu-text">
-        <div class="menu-title">Отчёт закупщика</div>
-        <div class="menu-title-cn">采购员日报</div>
-        <div class="menu-desc">Заполнить ежедневный отчёт по поставщикам / 填写每日供应商报告</div>
-      </div>
-      <div class="menu-arrow">›</div>
-    </a>
-
-    <a class="menu-btn" href="/parcel">
-      <div class="menu-icon">✈️</div>
-      <div class="menu-text">
-        <div class="menu-title">Отправить посылку</div>
-        <div class="menu-title-cn">发货登记</div>
-        <div class="menu-desc">Оформить отправление на склад 北京-1 / 登记发往北京-1仓库的包裹</div>
-      </div>
-      <div class="menu-arrow">›</div>
-    </a>
-  </div>
-
-  <div class="footer">SendMax · Все данные сохраняются в Google Sheets</div>
 </div>
+
+<div class="container">
+
+  <!-- Buyer name -->
+  <div class="buyer-card">
+    <div class="buyer-avatar" id="avatar">?</div>
+    <div class="buyer-field">
+      <label>Ваше имя / 您的姓名</label>
+      <input type="text" id="buyer-name" placeholder="Например: Ли Вэй / 例如：李伟"
+        oninput="updateAvatar(this.value)">
+    </div>
+  </div>
+
+  <div id="suppliers"></div>
+
+  <div class="btn-add-supplier" onclick="addSupplier()">
+    ＋ Добавить поставщика / 添加供应商
+  </div>
+
+  <div class="global-card">
+    <div class="sec-label">📝 Общий комментарий по дню / 当日总体备注</div>
+    <div class="field">
+      <textarea id="global-comment" style="min-height:80px"
+        placeholder="Настроение рынка, изменения цен, важные контакты… / 市场行情、价格变动、重要联系人…"></textarea>
+    </div>
+  </div>
+
+  <div class="submit-area">
+    <button class="submit-btn" id="send-btn" onclick="sendReport()">
+      ✈️ Отправить отчёт в Telegram / 发送报告到Telegram
+    </button>
+    <div class="status-msg" id="status-msg"></div>
+  </div>
+
+</div>
+
 <script>
+// ── CONFIG ── замените на ваш URL после деплоя на Railway
+const SERVER_URL = 'https://buyer-report-bot-production.up.railway.app';
+
 const d = new Date();
 document.getElementById('date-line').textContent =
-  d.toLocaleDateString('ru-RU', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  d.toLocaleDateString('ru-RU',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+function updateAvatar(val) {
+  document.getElementById('avatar').textContent = val ? val.trim()[0].toUpperCase() : '?';
+}
+
+let count = 0;
+
+const STATUSES = [
+  { key:'prog',   lbl:'В процессе / 谈判中',           sub:'Переговоры идут / 正在谈判',        badge:'badge-prog',   icon:'⏳' },
+  { key:'ok',     lbl:'Договорились / 已达成协议',      sub:'Условия согласованы / 条件已确认',  badge:'badge-ok',     icon:'✅' },
+  { key:'order',  lbl:'Заказ размещён / 已下订单',      sub:'Предоплата внесена / 已支付预付款', badge:'badge-order',  icon:'📄' },
+  { key:'sample', lbl:'Образцы запрошены / 已申请样品', sub:'Ожидаем доставку / 等待发货',       badge:'badge-sample', icon:'📦' },
+  { key:'fail',   lbl:'Отказали / 谈判失败',            sub:'Не договорились / 未能达成协议',    badge:'badge-fail',   icon:'❌' },
+  { key:'wait',   lbl:'Требует уточнения / 待确认',     sub:'Нужен доп. запрос / 需要进一步确认',badge:'badge-wait',   icon:'❓' },
+];
+
+const ISSUES = [
+  'Брак / качество / 质量问题','Задержка сроков / 交货延迟','Завышенная цена / 价格过高',
+  'Проблемы с MOQ / 起订量问题','Нет нужного товара / 无所需商品','Языковой барьер / 语言障碍',
+  'Отказ в образцах / 拒绝提供样品','Сомнительный поставщик / 供应商可疑',
+  'Проблемы с оплатой / 付款问题','Нет документов / 无相关文件',
+];
+
+const RATINGS = [
+  ['Качество товара','商品质量'],['Надёжность','可靠性'],
+  ['Гибкость цены','价格灵活性'],['Коммуникация','沟通能力'],
+];
+
+function addSupplier() {
+  count++;
+  const id = count;
+  const card = document.createElement('div');
+  card.className = 'supplier-card';
+  card.id = 'card-' + id;
+
+  const statusHTML = STATUSES.map(s => `
+    <div class="status-opt" onclick="selectStatus(${id},'${s.badge}','${s.lbl}',this)">
+      <div class="ico">${s.icon}</div>
+      <div class="lbl">${s.lbl}</div>
+      <div class="sub">${s.sub}</div>
+    </div>`).join('');
+
+  const ratingHTML = RATINGS.map(([ru,cn],ri) => `
+    <div class="rating-item">
+      <div class="rlabel">${ru} <span class="cn">/ ${cn}</span></div>
+      <div class="stars" id="stars-${id}-${ri}">
+        ${[1,2,3,4,5].map(v=>`<span class="star" onclick="setStar(${id},${ri},${v})">★</span>`).join('')}
+      </div>
+    </div>`).join('');
+
+  const issueHTML = ISSUES.map(i =>
+    `<span class="tag" onclick="this.classList.toggle('active')">${i}</span>`
+  ).join('');
+
+  card.innerHTML = `
+    <div class="card-head" onclick="toggleCard(${id})">
+      <div class="card-head-left">
+        <div class="card-num">${id}</div>
+        <div class="card-title" id="title-${id}">Поставщик ${id} / 供应商 ${id}</div>
+        <span class="badge badge-tbd" id="badge-${id}">Не заполнено / 未填写</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn-icon" onclick="event.stopPropagation();removeCard(${id})">✕</button>
+        <i class="chevron open" id="chev-${id}">▾</i>
+      </div>
+    </div>
+    <div class="card-body open" id="body-${id}">
+      <div class="sec">
+        <div class="sec-label">🏪 Поставщик / 供应商信息</div>
+        <div class="grid-3" style="margin-bottom:10px">
+          <div class="field"><label>Название / контакт <span class="cn">/ 名称·联系方式</span></label>
+            <input type="text" id="name-${id}" placeholder="Alibaba / WeChat" oninput="updateTitle(${id},this.value)"></div>
+          <div class="field"><label>Товар <span class="cn">/ 商品</span></label>
+            <input type="text" id="goods-${id}" placeholder="Наушники TWS / 蓝牙耳机"></div>
+          <div class="field"><label>Категория <span class="cn">/ 类别</span></label>
+            <input type="text" id="cat-${id}" placeholder="Электроника / 电子产品"></div>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>Цена за ед. (¥) <span class="cn">/ 单价</span></label>
+            <input type="number" id="price-${id}" placeholder="45.00"></div>
+          <div class="field"><label>MOQ (шт.) <span class="cn">/ 最小起订量</span></label>
+            <input type="number" id="moq-${id}" placeholder="500"></div>
+          <div class="field"><label>Срок производства <span class="cn">/ 生产周期</span></label>
+            <input type="text" id="lead-${id}" placeholder="14 дней / 14天"></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec">
+        <div class="sec-label">🔗 Каталоги поставщика / 供应商目录链接</div>
+        <div class="catalog-list" id="catalogs-${id}">
+          <div class="catalog-row">
+            <input type="text" class="field name-input" placeholder="Название / 名称">
+            <input type="url"  class="field url-input"  placeholder="https://..." oninput="updateLink(this)">
+            <a class="open-link disabled" href="#" target="_blank">↗ Открыть</a>
+            <button class="btn-del" onclick="this.closest('.catalog-row').remove()">✕</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addCatalog(${id})">＋ Каталог / 添加目录</button>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec">
+        <div class="sec-label">📋 Итог переговоров / 谈判结果</div>
+        <div class="status-grid">${statusHTML}</div>
+        <div class="field" style="margin-top:10px">
+          <label>Комментарий <span class="cn">/ 备注</span></label>
+          <textarea id="status-note-${id}" placeholder="Детали договорённости… / 协议详情…"></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec">
+        <div class="sec-label">⭐ Оценка поставщика / 供应商评分</div>
+        <div class="rating-grid">${ratingHTML}</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec">
+        <div class="sec-label">⚠️ Выявленные проблемы / 发现的问题</div>
+        <div class="tag-wrap">${issueHTML}</div>
+        <div class="field" style="margin-top:10px">
+          <label>Описание <span class="cn">/ 详细说明</span></label>
+          <textarea id="issues-note-${id}" placeholder="Подробности… / 问题详情…"></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec">
+        <div class="sec-label">➡ Следующие шаги / 下一步行动</div>
+        <div class="steps-list" id="steps-${id}">
+          <div class="step-row">
+            <input type="text" class="step-input" placeholder="Что сделать / 待办事项">
+            <input type="date" class="date-input">
+            <button class="btn-del" onclick="this.closest('.step-row').remove()">✕</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addStep(${id})">＋ Шаг / 添加步骤</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('suppliers').appendChild(card);
+}
+
+function toggleCard(id) {
+  const body = document.getElementById('body-'+id), chev = document.getElementById('chev-'+id);
+  const open = body.classList.contains('open');
+  body.classList.toggle('open',!open); chev.classList.toggle('open',!open);
+}
+function removeCard(id) { const el=document.getElementById('card-'+id); if(el) el.remove(); }
+function updateTitle(id,val) {
+  document.getElementById('title-'+id).textContent = val ? val+' / 供应商' : ('Поставщик '+id+' / 供应商 '+id);
+}
+function selectStatus(id,badgeClass,lbl,el) {
+  el.closest('.status-grid').querySelectorAll('.status-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  const b=document.getElementById('badge-'+id);
+  b.className='badge '+badgeClass; b.textContent=lbl.split('/')[0].trim();
+}
+function setStar(cid,ri,v) {
+  document.getElementById('stars-'+cid+'-'+ri).querySelectorAll('.star')
+    .forEach((s,i)=>s.classList.toggle('lit',i<v));
+}
+function updateLink(input) {
+  const val=input.value.trim(), a=input.closest('.catalog-row').querySelector('.open-link');
+  if(val.startsWith('http')){ a.href=val; a.classList.remove('disabled'); }
+  else { a.href='#'; a.classList.add('disabled'); }
+}
+function addCatalog(id) {
+  const row=document.createElement('div'); row.className='catalog-row';
+  row.innerHTML=`<input type="text" class="field name-input" placeholder="Название / 名称">
+    <input type="url" class="field url-input" placeholder="https://..." oninput="updateLink(this)">
+    <a class="open-link disabled" href="#" target="_blank">↗ Открыть</a>
+    <button class="btn-del" onclick="this.closest('.catalog-row').remove()">✕</button>`;
+  document.getElementById('catalogs-'+id).appendChild(row);
+}
+function addStep(id) {
+  const row=document.createElement('div'); row.className='step-row';
+  row.innerHTML=`<input type="text" class="step-input" placeholder="Что сделать / 待办事项">
+    <input type="date" class="date-input">
+    <button class="btn-del" onclick="this.closest('.step-row').remove()">✕</button>`;
+  document.getElementById('steps-'+id).appendChild(row);
+}
+
+function getStars(el) {
+  const n=el.querySelectorAll('.star.lit').length; return '★'.repeat(n)+'☆'.repeat(5-n);
+}
+
+function buildReport() {
+  const buyerName = document.getElementById('buyer-name').value.trim() || 'Не указано';
+  const date = document.getElementById('date-line').textContent;
+  const lines = [];
+  lines.push('═══════════════════════════════════════════');
+  lines.push('  ЕЖЕДНЕВНЫЙ ОТЧЁТ ЗАКУПЩИКА / 采购员日报');
+  lines.push('═══════════════════════════════════════════');
+  lines.push('  Закупщик / 采购员: ' + buyerName);
+  lines.push('  Дата / 日期: ' + date);
+  lines.push('');
+
+  const cards = document.querySelectorAll('.supplier-card');
+  cards.forEach((card, idx) => {
+    const id = card.id.replace('card-','');
+    lines.push('───────────────────────────────────────────');
+    lines.push(`  ПОСТАВЩИК ${idx+1} / 供应商 ${idx+1}`);
+    lines.push('───────────────────────────────────────────');
+    const v = k => (document.getElementById(k+'-'+id)||{}).value || '—';
+    lines.push('  Название / 名称: '+v('name'));
+    lines.push('  Товар / 商品: '+v('goods'));
+    lines.push('  Категория / 类别: '+v('cat'));
+    lines.push('  Цена за ед. (¥) / 单价: '+v('price'));
+    lines.push('  MOQ (шт.) / 最小起订量: '+v('moq'));
+    lines.push('  Срок производства / 生产周期: '+v('lead'));
+    lines.push('');
+
+    const catRows = card.querySelectorAll('.catalog-row');
+    const catLines = [];
+    catRows.forEach(r => {
+      const n=(r.querySelector('.name-input')||{}).value||'';
+      const u=(r.querySelector('.url-input')||{}).value||'';
+      if(n||u) catLines.push('    · '+(n||'—')+' → '+(u||'—'));
+    });
+    if(catLines.length){ lines.push('  КАТАЛОГИ / 目录链接:'); lines.push(...catLines); lines.push(''); }
+
+    const sel=card.querySelector('.status-opt.sel');
+    lines.push('  СТАТУС / 谈判状态: '+(sel?sel.querySelector('.lbl').textContent:'—'));
+    const sn=v('status-note'); if(sn!=='—') lines.push('  Комментарий / 备注: '+sn);
+    lines.push('');
+
+    lines.push('  ОЦЕНКА / 评分:');
+    RATINGS.forEach(([ru,cn],ri)=>{
+      const el=document.getElementById('stars-'+id+'-'+ri);
+      if(el) lines.push('    '+ru+' / '+cn+': '+getStars(el));
+    });
+    lines.push('');
+
+    const tags=[...card.querySelectorAll('.tag.active')].map(t=>t.textContent);
+    if(tags.length){ lines.push('  ПРОБЛЕМЫ / 问题:'); tags.forEach(t=>lines.push('    · '+t)); }
+    const inn=v('issues-note'); if(inn!=='—') lines.push('  Описание / 说明: '+inn);
+    if(tags.length||inn!=='—') lines.push('');
+
+    const stepRows=card.querySelectorAll('.step-row'), stepLines=[];
+    stepRows.forEach((r,si)=>{
+      const txt=(r.querySelector('.step-input')||{}).value||'';
+      const dt=(r.querySelector('.date-input')||{}).value||'';
+      if(txt||dt) stepLines.push('    '+(si+1)+'. '+(txt||'—')+(dt?' ['+dt+']':''));
+    });
+    if(stepLines.length){ lines.push('  СЛЕДУЮЩИЕ ШАГИ / 下一步行动:'); lines.push(...stepLines); lines.push(''); }
+  });
+
+  lines.push('═══════════════════════════════════════════');
+  lines.push('  ОБЩИЙ КОММЕНТАРИЙ / 总体备注');
+  lines.push('═══════════════════════════════════════════');
+  lines.push(document.getElementById('global-comment').value || '—');
+
+  return { name: buyerName, date, report: lines.join('\n') };
+}
+
+async function sendReport() {
+  const name = document.getElementById('buyer-name').value.trim();
+  if (!name) { alert('Введите ваше имя / 请输入您的姓名'); document.getElementById('buyer-name').focus(); return; }
+  if (!document.querySelectorAll('.supplier-card').length) { alert('Добавьте хотя бы одного поставщика / 请至少添加一个供应商'); return; }
+
+  const btn = document.getElementById('send-btn');
+  const msg = document.getElementById('status-msg');
+
+  btn.disabled = true;
+  msg.className = 'status-msg sending';
+  msg.textContent = '⏳ Отправляем отчёт… / 正在发送报告…';
+
+  try {
+    const payload = buildReport();
+    const res = await fetch('/send-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Server error');
+    msg.className = 'status-msg success';
+    msg.textContent = '✅ Отчёт отправлен! / 报告已发送！';
+  } catch(e) {
+    msg.className = 'status-msg error';
+    msg.textContent = '❌ Ошибка отправки. Проверьте соединение. / 发送失败，请检查网络连接。';
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+addSupplier();
 </script>
 </body>
 </html>
